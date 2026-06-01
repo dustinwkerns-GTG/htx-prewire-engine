@@ -14,6 +14,31 @@ Format per entry:
 
 ---
 
+## 2026-06-01 — v0.3.5 — Tier/lane reconciliation
+
+**Summary:** Reconciles the HTX Project Tiering Standard v1.0 with the engine lane model by adding an explicit `tier` field to every lane, introducing `quick_quote`, `conference_room`, and `complex_commercial`, and extending lane-determination precedence for quick-quote and commercial complexity signals.
+
+**Reason:** Cowork adopted the approved Tier 1 / Tier 2 / Tier 3 complexity model, while the engine's `mappings/lanes.yaml` still had four lanes with no explicit tier label. The models now share one source of truth while preserving the engine's stage-aware control-file timing model.
+
+**Files changed:**
+- `mappings/lanes.yaml` — bumped schema to 1.2, added tiers to existing lanes, added `quick_quote`, `conference_room`, and `complex_commercial`, and updated `lane_determination_precedence`.
+- `rules/01-project-lanes.md` — documented the tier spine, seven lanes, quick-quote/commercial precedence, and the requirement that `required_control_files_by_stage` remains canonical.
+- `rules/99-corrections-workflow.md` — added to the canonical GitHub branch from the engine working tree so this PR can follow the documented workflow.
+- `AGENTS.md` — updated the top-level lane summary to show seven lanes and tier labels.
+- `tests/tier-lane-reconciliation.md` — manual regression fixture covering Quick Quote, Complex Commercial inheritance, Conference Room AV, and final-scope stage gating.
+- `prompt_versions/Prompt_Update_Log.md` — this entry.
+
+**Affected workflow / lane:** All lanes; especially Tier 1 quick quote/service/bid walk, Tier 2 conference room / standard lanes, and Tier 3 complex commercial.
+
+**Cowork-side update needed:** Yes. Cowork should reload/use `mappings/lanes.yaml` as the canonical lane/tier bridge and defer control-file timing to `required_control_files_by_stage` instead of maintaining a parallel tier-to-file list.
+
+**Tests added or updated:**
+- `tests/tier-lane-reconciliation.md` — manual regression test fixture.
+
+**Dustin approval status:** Draft pending PR review. Dustin approval required before merge. Implemented by Hermes because Codex connection was down; PR must not be merged by Hermes.
+
+---
+
 ## 2026-05-29 — v0.3.4 — Docs correction: GitHub account and local path
 
 **Summary:** Corrected two stale references in AGENTS.md and CODEX.md.
