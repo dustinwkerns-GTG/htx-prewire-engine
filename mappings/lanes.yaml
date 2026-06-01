@@ -1,0 +1,475 @@
+# mappings/lanes.yaml
+#
+# Machine-readable Project Lane definitions.
+# This file is the single source of truth for lane structure across:
+#   - htx-prewire-engine (rules/*.md, skills/*/SKILL.md)
+#   - Cowork (COWORK.md, intake workflow)
+#
+# When this file changes, both systems pick up the new definitions on next load.
+# Editing this file is a behavior change and requires the corrections workflow
+# (rules/99-corrections-workflow.md) plus a Prompt_Update_Log entry.
+#
+# Schema version: 1.2
+# Last updated: 2026-06-01
+
+schema_version: "1.2"  # 1.2: adds project tiers and Tier 1/2/3 lane reconciliation
+
+# Project Stage model — defines when control files become required.
+# A project moves forward through stages; once a stage is entered, that stage's
+# files are required (in addition to all prior stages' files).
+# Stage is tracked in PROJECT_CONTEXT.md via a "Project Stage:" field.
+project_stages:
+  - id: intake
+    display_name: "Intake"
+    description: "Project folder created; intake details captured; awaiting AI agent run."
+    typical_duration: "Same-day to 1-2 days"
+  - id: engine_run
+    display_name: "Engine Run"
+    description: "Prewire Helper GPT and/or engine skills have run; first output produced."
+    typical_duration: "1-3 days post-intake"
+  - id: review
+    display_name: "Review"
+    description: "Outputs produced; assumptions and Review Needed captured; Dustin reviewing."
+    typical_duration: "Variable — depends on Dustin availability"
+  - id: final_approved
+    display_name: "Final Approved"
+    description: "Dustin approved; scope final; project files moved to 11 Final Approved."
+    typical_duration: "Terminal stage; project filed and live"
+
+lanes:
+
+  - id: full_prewire
+    display_name: "Full Prewire"
+    description: "Standard HTX prewire + AV with marked plans."
+    tier: 2
+    typical_project: "Murphys Custom Homes / Welsby / 120 Woodmen Ct"
+
+    source_priority:
+      - marked_prewire_drawings        # primary
+      - builder_client_notes
+      - current_htx_calculator
+      - full_construction_plan_set     # context only
+      - completed_examples_prior_proposals  # reference only
+
+    workbook_tabs_primary:
+      - Pricing Calculator
+      - Room Takeoff
+    workbook_tabs_support:
+      - Dashboard
+      - Project Info
+      - File Inventory
+      - Relevant Sheet Review
+      - Takeoff Summary
+      - Options - Alternates
+      - Builder Scope
+      - Review Needed
+      - iPoint Entry
+      - Scope Notes
+      - Tech Handoff
+      - Revision Tracker
+    workbook_tabs_skip:
+      - Lighting Control Takeoff
+      - Lighting Control Summary
+      - Room Lighting Takeoff
+      - Room Lighting Summary
+
+    output_structure: "12-section"  # see rules/04-output-structure.md
+    reference_block: "full_prewire_standard"
+
+    # Required control files vary by project stage.
+    # Stage progression: intake → engine_run → review → final_approved
+    # A file required at stage N is also required at all subsequent stages.
+    required_control_files_by_stage:
+      intake:
+        - PROJECT_CONTEXT.md          # always required from the moment a project folder exists
+        - INTAKE_FORM.md              # required once intake details are captured (typically same day as folder creation)
+      engine_run:
+        - AI_RUN_PACKAGE_PreWire_v1.md  # required before the Prewire Helper GPT or engine skills are invoked
+        - AI_HANDOFF_LOG.md           # required as soon as the first AI agent action is logged
+      review:
+        - ASSUMPTIONS_AND_DECISIONS.md  # required as soon as first assumption or decision is captured
+        - REVIEW_NEEDED.md            # required after first AI output produces flagged items
+      final_approved:
+        - FINAL_SCOPE_NOTES.md        # required only after Dustin approves and project moves to 11 Final Approved
+
+    definition_of_done_items: 13       # see COWORK.md § Definition of Done
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "if_client_device_list_present"
+      rcps_as_spatial_only: false
+      wait_for_marked_plans: true
+      speaker_pair_counting: true
+      maestro_ra2_check: "if_lighting_in_scope"
+      hub_repeater_sizing_fallback: false
+      exterior_entertainment_as_optional: true
+      address_cross_check: "mandatory"
+      contamination_check: "mandatory"
+
+    workbook_naming_template: "[ClientLastName] - Prewire Calculator - Rev[N] - [Date].xlsx"
+
+  - id: lighting_control_only
+    display_name: "Lighting Control Only"
+    description: "Lutron (or similar) package only, no standard prewire. Source priority is INVERTED."
+    tier: 2
+    typical_project: "Basich / 5210 Vickery"
+
+    source_priority:
+      - client_architect_device_spreadsheet   # primary (INVERTED)
+      - builder_client_notes
+      - rcps_spatial_only                      # never used as device source
+      - prior_htx_lighting_projects            # reference only
+
+    workbook_tabs_primary:
+      - Lighting Control Takeoff
+      - Lighting Control Summary
+      - Room Lighting Takeoff
+      - Room Lighting Summary
+    workbook_tabs_support:
+      - Dashboard
+      - Project Info
+      - File Inventory
+      - Relevant Sheet Review
+      - Options - Alternates
+      - Builder Scope
+      - Review Needed
+      - iPoint Entry
+      - Scope Notes
+      - Tech Handoff
+    workbook_tabs_skip:
+      - Pricing Calculator
+      - Room Takeoff
+
+    output_structure: "10-section-lighting-only"  # per COWORK.md AI_RUN_PACKAGE variant block
+    reference_block: "lighting_control_only_variant"
+
+    # Required control files vary by project stage (same stage model as full_prewire).
+    required_control_files_by_stage:
+      intake:
+        - PROJECT_CONTEXT.md
+        - INTAKE_FORM.md
+      engine_run:
+        - AI_RUN_PACKAGE_PreWire_v1.md
+        - AI_HANDOFF_LOG.md
+      review:
+        - ASSUMPTIONS_AND_DECISIONS.md
+        - REVIEW_NEEDED.md
+      final_approved:
+        - FINAL_SCOPE_NOTES.md
+
+    definition_of_done_items: 11
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "always"        # mandatory on every intake
+      rcps_as_spatial_only: true
+      wait_for_marked_plans: false              # marked plans not expected
+      speaker_pair_counting: false
+      maestro_ra2_check: "always"               # mandatory
+      hub_repeater_sizing_fallback: "when_system_hardware_unsupported"
+      exterior_entertainment_as_optional: false  # N/A (out of lane scope)
+      address_cross_check: "mandatory"
+      contamination_check: "mandatory"
+      remote_project_default: true              # most are remote, no site walk
+
+    mandatory_skills:
+      - htx-spreadsheet-quirks-scan
+      - htx-address-cross-check  # planned v0.3.0+
+      - htx-lutron-generation-check  # planned v0.3.0+
+
+    standard_exclusions_in_scope_language:
+      - Standard low-voltage prewire
+      - AV (TV prewire, distributed audio, theater)
+      - Network and data drops
+      - Security prewire
+      - Shades and motor screens
+      - Final programming, scene setup, commissioning
+      - App setup, client training
+      - Electrical labor
+      - Fixture and load design
+      - Keypad and Pico engraving
+
+    hub_repeater_sizing:
+      one_floor:
+        working_base: "1 main + 1 wireless"
+        alternate: null
+      two_floor:
+        working_base: "1 main + 2 wireless"
+        alternate: "Optional 3rd wireless"
+      three_floor_or_detached:
+        working_base: "1 main + 3 wireless"
+        alternate: "+1 additional"
+      always_mark_as: "design allowance subject to Lutron rep confirmation"
+
+    workbook_naming_template: "[ClientLastName] - Lighting Control Workbook - Rev[N] - [Date].xlsx"
+
+  - id: quick_quote
+    display_name: "Quick Quote"
+    description: "No construction plans; single system or single location (TV mount, soundbar, service call, one-off). Minimal structure."
+    tier: 1
+    typical_project: null
+
+    source_priority:
+      - conversation_notes
+      - change_request
+
+    workbook_tabs_primary:
+      - "subset or none"
+    workbook_tabs_support:
+      - Project Info
+      - Scope Notes
+      - Review Needed
+    workbook_tabs_skip:
+      - Pricing Calculator
+      - Room Takeoff
+      - Lighting Control Takeoff
+      - Lighting Control Summary
+      - Room Lighting Takeoff
+      - Room Lighting Summary
+
+    output_structure: "minimal"
+    reference_block: "quick_quote"
+
+    # Tier 1 Quick Quote intentionally keeps the control-file footprint light.
+    # The stage model remains canonical; REVIEW_NEEDED.md is generated only when
+    # something is genuinely unclear.
+    required_control_files_by_stage:
+      intake:
+        - PROJECT_CONTEXT.md
+      engine_run: []
+      review: []
+      final_approved: []
+
+    definition_of_done_items: 3
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "skip"
+      rcps_as_spatial_only: "skip"
+      wait_for_marked_plans: false
+      speaker_pair_counting: "if_relevant"
+      maestro_ra2_check: "if_lighting_in_scope"
+      hub_repeater_sizing_fallback: "skip"
+      exterior_entertainment_as_optional: "skip"
+      address_cross_check: "recommended"
+      contamination_check: "recommended"
+
+    workbook_naming_template: "[ClientLastName] - Quick Quote - Rev[N] - [Date].xlsx"
+
+  - id: service_addon
+    display_name: "Service / Add-On"
+    description: "Existing client, scoped change."
+    tier: 1
+    typical_project: null  # varies
+
+    source_priority:
+      - prior_project_records      # primary
+      - change_request              # primary
+      - updated_drawings            # if provided
+      - prior_proposals             # reference
+
+    workbook_tabs_primary:
+      - "subset based on change"
+    workbook_tabs_support: []
+    workbook_tabs_skip: []
+
+    output_structure: "scoped-subset"   # see rules/04-output-structure.md
+    reference_block: "service_addon"    # planned v0.3.0+
+
+    # Required control files use the same stage model; Service / Add-On has a
+    # lighter minimum footprint than Full Prewire unless the scoped change moves
+    # into review/final approval.
+    required_control_files_by_stage:
+      intake:
+        - PROJECT_CONTEXT.md
+      engine_run:
+        - AI_HANDOFF_LOG.md
+      review: []
+      final_approved:
+        - FINAL_SCOPE_NOTES.md
+
+    definition_of_done_items: null     # project-specific
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "if_relevant_to_change"
+      rcps_as_spatial_only: "per_change"
+      wait_for_marked_plans: "per_change"
+      speaker_pair_counting: "if_relevant"
+      maestro_ra2_check: "if_relevant"
+      hub_repeater_sizing_fallback: "if_relevant"
+      exterior_entertainment_as_optional: "per_change"
+      address_cross_check: "recommended"
+      contamination_check: "mandatory"
+
+    workbook_naming_template: "[ClientLastName] - Service Workbook - Rev[N] - [Date].xlsx"
+
+  - id: bid_walk_pre_plan
+    display_name: "Bid Walk / Pre-Plan"
+    description: "Relationship building before plans exist. Minimal output."
+    tier: 1
+    typical_project: null
+
+    source_priority:
+      - conversation_notes  # primary
+      - reference_materials
+
+    workbook_tabs_primary:
+      - Project Info
+      - Scope Notes
+    workbook_tabs_support: []
+    workbook_tabs_skip:
+      - Pricing Calculator
+      - Room Takeoff
+      - Lighting Control Takeoff
+      - Lighting Control Summary
+      - Room Lighting Takeoff
+      - Room Lighting Summary
+
+    output_structure: "minimal"  # see rules/04-output-structure.md
+    reference_block: null
+
+    # Required control files use the same stage model; Bid Walk / Pre-Plan only
+    # requires PROJECT_CONTEXT.md unless Dustin promotes the project into another lane.
+    required_control_files_by_stage:
+      intake:
+        - PROJECT_CONTEXT.md
+      engine_run: []
+      review: []
+      final_approved: []
+
+    definition_of_done_items: null
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "skip"
+      rcps_as_spatial_only: "skip"
+      wait_for_marked_plans: "skip"
+      speaker_pair_counting: "skip"
+      maestro_ra2_check: "skip"
+      hub_repeater_sizing_fallback: "skip"
+      exterior_entertainment_as_optional: "skip"
+      address_cross_check: "recommended"
+      contamination_check: "recommended"
+
+    workbook_naming_template: "[ClientLastName] - BidWalk Notes - Rev[N] - [Date].xlsx"
+
+  - id: complex_commercial
+    display_name: "Complex / Commercial / Multi-phase"
+    description: "Commercial, multi-building, phased, or multi-system with commissioning (e.g., Trinnov theater). Full prewire base plus commissioning + phase structure."
+    tier: 3
+    inherits: full_prewire
+    typical_project: null
+
+    source_priority:
+      use: full_prewire
+    workbook_tabs_primary:
+      use: full_prewire
+    workbook_tabs_support:
+      use: full_prewire
+    workbook_tabs_skip:
+      use: full_prewire
+
+    output_structure: "12-section-plus-commissioning-and-phases"
+    reference_block: "complex_commercial"
+    adds_structure:
+      - Commissioning
+      - "Phase folders (Phase 1, Phase 2, …)"
+
+    # Stage timing remains canonical and inherited from Full Prewire; complex
+    # projects add per-phase / commissioning sign-off artifacts without replacing
+    # required_control_files_by_stage.
+    required_control_files_by_stage:
+      use: full_prewire
+
+    definition_of_done_items: "full_prewire DoD + commissioning sign-off + per-phase approval"
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "if_client_device_list_present"
+      rcps_as_spatial_only: false
+      wait_for_marked_plans: true
+      speaker_pair_counting: true
+      maestro_ra2_check: "if_lighting_in_scope"
+      hub_repeater_sizing_fallback: false
+      exterior_entertainment_as_optional: true
+      address_cross_check: "mandatory"
+      contamination_check: "mandatory"
+      commissioning_signoff: "mandatory"
+      phase_scope_tracking: "mandatory"
+
+    workbook_naming_template: "[ClientLastName] - Complex Commercial Workbook - Rev[N] - [Date].xlsx"
+
+  - id: conference_room
+    display_name: "Conference Room / Commercial AV"
+    description: "Specialized commercial conference-room AV — separate equipment set (displays, VC codecs, DSP, room control, mic arrays). Not residential prewire."
+    tier: 2
+    typical_project: null
+
+    source_priority:
+      - client_av_requirements
+      - room_drawings_or_walkthrough
+      - prior_conference_room_projects
+
+    workbook_tabs_primary:
+      - Project Info
+      - File Inventory
+      - Relevant Sheet Review
+      - Scope Notes
+      - Review Needed
+    workbook_tabs_support:
+      - Builder Scope
+      - iPoint Entry
+      - Tech Handoff
+      - Revision Tracker
+    workbook_tabs_skip:
+      - Lighting Control Takeoff
+      - Lighting Control Summary
+      - Room Lighting Takeoff
+      - Room Lighting Summary
+
+    output_structure: "commercial-av"
+    reference_block: "conference_room"
+
+    # Uses the Full Prewire stage timing model until a commercial-AV-specific
+    # test fixture justifies narrower timing.
+    required_control_files_by_stage:
+      use: full_prewire
+
+    definition_of_done_items: "commercial AV scope + equipment set + review exceptions + Dustin approval"
+
+    behavior_switches:
+      spreadsheet_quirks_scan: "if_client_device_list_present"
+      rcps_as_spatial_only: true
+      wait_for_marked_plans: false
+      speaker_pair_counting: false
+      maestro_ra2_check: "if_lighting_in_scope"
+      hub_repeater_sizing_fallback: "skip"
+      exterior_entertainment_as_optional: false
+      address_cross_check: "mandatory"
+      contamination_check: "mandatory"
+      commercial_av_equipment_set: "mandatory"
+
+    equipment_scope_categories:
+      - displays
+      - video_conferencing_codecs
+      - dsp
+      - room_control
+      - microphones_or_ceiling_arrays
+
+    escalation_rule: "Escalate to complex_commercial when the conference-room scope is multi-room, multi-building, phased, or commissioning-heavy."
+    workbook_naming_template: "[ClientName] - Conference Room AV - Rev[N] - [Date].xlsx"
+
+# ---
+# Lane determination order of precedence (per rules/01-project-lanes.md)
+# Used by Cowork's intake workflow when auto-detecting lane.
+
+lane_determination_precedence:
+  - "explicit_dustin_instruction"       # explicit lane/tier always wins
+  - "complex_commercial_signals"        # commercial + multi-building / multi-phase / commissioning → complex_commercial
+  - "conference_room_signals"           # conference-room AV requirements / codecs / DSP / room control → conference_room
+  - "quick_quote_signals"               # no plans + single system/location → quick_quote
+  - "email_subject_keywords"            # 'lighting only', 'service', 'add-on', 'bid walk', 'pre-plan', 'quick quote', etc.
+  - "attachment_types"                  # Lutron spreadsheet + RCPs only → likely Lighting Control Only
+  - "builder_client_context"            # prior project records suggests Service / Add-On
+  - "ask_dustin"                        # default — do not auto-default to Full Prewire
+
+# ---
+# Cross-references
+# - rules/01-project-lanes.md (engine-side rules)
+# - COWORK.md § Project Lanes (canonical Cowork-side definitions)
+# - rules/05-cowork-integration.md § Skill Invocation Map

@@ -50,14 +50,17 @@ The 12-subfolder structure (`00 Intake` through `11 Final Approved`) is the cano
 
 ## 3. Project Lanes (READ FIRST)
 
-Every project belongs to exactly one lane. The lane is set in `AI_RUN_PACKAGE_PreWire_v1.md` at intake. The lane determines source priority, workbook tabs used, and which rules apply. If the lane is missing, do not process — ask Dustin to set it.
+Every project belongs to exactly one lane and every lane carries an explicit complexity `tier`. The lane is set in `AI_RUN_PACKAGE_PreWire_v1.md` at intake. The lane determines source priority, workbook tabs used, and which rules apply. If the lane/tier is missing, do not process — ask Dustin to set it.
 
-| Lane | Primary Source | Workbook Tabs | Typical Output |
-|---|---|---|---|
-| **Full Prewire** | Marked HTX prewire drawings | Pricing Calculator + Room Takeoff (+ standard support tabs) | Standard 12-section proposal support package |
-| **Lighting Control Only** | Client/architect device spreadsheet (Lutron) | Lighting Control Takeoff, Lighting Control Summary, Room Lighting Takeoff, Room Lighting Summary | Lutron-focused scope; no standard prewire/AV |
-| **Service / Add-On** | Prior project records + change request | Subset of standard tabs as relevant | Scoped change package |
-| **Bid Walk / Pre-Plan** | Pre-plan notes only | Project Info + Scope Notes only | Minimal output for pre-plan estimation |
+| Lane | Tier | Primary Source | Workbook Tabs | Typical Output |
+|---|---:|---|---|---|
+| **Full Prewire** | 2 | Marked HTX prewire drawings | Pricing Calculator + Room Takeoff (+ standard support tabs) | Standard 12-section proposal support package |
+| **Lighting Control Only** | 2 | Client/architect device spreadsheet (Lutron) | Lighting Control Takeoff, Lighting Control Summary, Room Lighting Takeoff, Room Lighting Summary | Lutron-focused scope; no standard prewire/AV |
+| **Quick Quote** | 1 | Conversation notes / change request | Subset or none | Minimal one-off quote package |
+| **Service / Add-On** | 1 | Prior project records + change request | Subset of standard tabs as relevant | Scoped change package |
+| **Bid Walk / Pre-Plan** | 1 | Pre-plan notes only | Project Info + Scope Notes only | Minimal output for pre-plan estimation |
+| **Conference Room / Commercial AV** | 2 | Client AV requirements + room drawings/walkthrough | Commercial-AV output set | Specialized conference-room AV package |
+| **Complex / Commercial / Multi-phase** | 3 | Inherits Full Prewire; commercial/phase/commissioning signals | Full Prewire base + phase/commissioning structure | Complex commercial package with sign-off tracking |
 
 **Critical inversion in Lighting Control Only:** the client/architect device spreadsheet is the primary source. RCPs are spatial reference only. HTX-marked plans are NOT required. This is the opposite of Full Prewire's source priority and must not be confused.
 
