@@ -2,8 +2,8 @@
 
 **Repository:** `htx-prewire-engine`
 **Owner:** Dustin Kerns, HomeTroniX of Colorado
-**Version:** 3.0 (v0.3.0 — adds project stages + stage-aware control file gating; lane backfill task)
-**Last updated:** 2026-05-15
+**Version:** 3.1 (v0.3.3 status note — tier/lane reconciliation merged; Codex reconnect pending)
+**Last updated:** 2026-06-01
 
 ---
 
@@ -401,6 +401,12 @@ Codex is the repo editor for htx-prewire-engine. See `CODEX.md` for full setup, 
 **Repo location:** `C:\Users\dusti\OneDrive\Documentos\HomeTroniX of Colorado\HTX Prewire Engine\`
 
 **GitHub:** `https://github.com/dustinwkerns-GTG/htx-prewire-engine` (private)
+
+### 16.1 Current connection status (2026-06-01 system sync)
+
+- **Tier/lane reconciliation merged:** canonical `main` now includes the Project Tiering Standard v1.0 bridge: every lane has an explicit `tier`, and the engine includes `quick_quote`, `complex_commercial`, and `conference_room` lanes. Treat this as the current v0.3.3-era lane model until the next version bump.
+- **Codex reconnect pending:** do **not** assume Codex is currently wired. The previous Codex environment targeted non-existent `dustinwkerns/htx-prewire-engine`; writes there did not land on canonical. Before assigning Codex engine work, Dustin must grant/configure the Codex GitHub app on `dustinwkerns-GTG/htx-prewire-engine`, create a fresh environment, and verify a throwaway write lands on canonical.
+- **Canonical write rule:** any agent editing this repo must verify `origin` is `https://github.com/dustinwkerns-GTG/htx-prewire-engine` and verify the pushed branch/PR on GitHub before reporting success.
 
 ---
 
